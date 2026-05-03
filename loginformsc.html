@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Papaparse for easy CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- LOGIN SECTION -->
+    <div id="login-section" class="flex items-center justify-center min-h-screen">
+        <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md border border-gray-200">
+            <h2 class="text-2xl font-bold text-center text-blue-700 mb-6">Student Portal Login</h2>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Username</label>
+                    <input type="text" id="username" class="w-full p-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none" placeholder="admin" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="password" class="w-full p-2 mt-1 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none" placeholder="1234" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD (Hidden by default) -->
+    <div id="dashboard-section" class="hidden p-8">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800">Student Data Management</h1>
+                <button onclick="location.reload()" class="text-red-500 hover:underline">Logout</button>
+            </div>
+
+            <!-- BATCH IMPORT SECTION -->
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8">
+                <h3 class="text-lg font-semibold mb-4 text-gray-700">Batch Import Students</h3>
+                <div class="flex items-center space-x-4">
+                    <input type="file" id="csv-file" accept=".csv" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    <button onclick="handleBatchImport()" class="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition">Import CSV</button>
+                </div>
+                <p class="text-xs text-gray-400 mt-2">Upload a CSV file with headers: Name, ID, Course, Grade</p>
+            </div>
+
+            <!-- DATA TABLE -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-100 border-b">
+                        <tr>
+                            <th class="p-4 font-semibold text-gray-600">Student Name</th>
+                            <th class="p-4 font-semibold text-gray-600">ID Number</th>
+                            <th class="p-4 font-semibold text-gray-600">Course</th>
+                            <th class="p-4 font-semibold text-gray-600">Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody id="student-table-body" class="divide-y">
+                        <!-- Data will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Simple Login Logic
+        const loginForm = document.getElementById('login-form');
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            // Just for demo purposes: any login works
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.remove('hidden');
+        });
+
+        // 2. Batch Import Logic using PapaParse
+        function handleBatchImport() {
+            const fileInput = document.getElementById('csv-file');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert("Please select a CSV file first!");
+                return;
+            }
+
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    displayData(results.data);
+                }
+            });
+        }
+
+        // 3. Display Data in Table
+        function displayData(data) {
+            const tableBody = document.getElementById('student-table-body');
+            // Clear existing rows
+            tableBody.innerHTML = "";
+
+            data.forEach(student => {
+                const row = `
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="p-4">${student.Name || 'N/A'}</td>
+                        <td class="p-4 text-blue-600 font-mono">${student.ID || 'N/A'}</td>
+                        <td class="p-4">${student.Course || 'N/A'}</td>
+                        <td class="p-4">
+                            <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-sm">${student.Grade || 'N/A'}</span>
+                        </td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+
+            alert(`Successfully imported ${data.length} students!`);
+        }
+    </script>
+</body>
+</html>
